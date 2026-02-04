@@ -24,14 +24,14 @@ app.listen(port, () => {
 
 
 async function processWebhook(content: any, res: any) {
-  console.debug(new Date().toISOString());
+  console.debug(`${new Date().toISOString()}${content?.type ? ' - ' + content.type : ''}`);
 
   /* Print partial payload */
   // console.debug(JSON.stringify(content, null, 2).slice(0, 200));
 
   /* Save payload to file */
   try {
-    saveToFile(content, `${new Date().toISOString()}.json`, content.type);
+    saveToFile(content, `${new Date().toISOString()}.json`, content?.type);
   } catch (error) {
     console.error(error);
   }
@@ -62,14 +62,14 @@ async function processWebhook(content: any, res: any) {
 }
 
 function saveToFile(content: any, filename: string, directory?: string) {
-  console.debug(`Saving to file ${filename} ${directory ? `(directory: ${directory})` : ''}`);
-  // const dir = path.join('C:/Users', os.userInfo().username, 'Desktop', 'webhook', directory ?? '');
   const dir = path.join(__dirname, '../data', directory ?? '');
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
+  const fullPath = path.join(dir, filename.replace(/:/g, '_'));
+  console.debug(`Saving to file: ${fullPath}\n`);
   fs.writeFileSync(
-    path.join(dir, filename.replace(/:/g, '_')),
+    fullPath,
     JSON.stringify(content, null, 2)
   );
 }
