@@ -36,9 +36,41 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 });
 
+function pad2(value: number): string {
+  return String(value).padStart(2, '0');
+}
+
+function getLocalDateStamp(date = new Date()): string {
+  const year = date.getFullYear();
+  const month = pad2(date.getMonth() + 1);
+  const day = pad2(date.getDate());
+  return `${year}-${month}-${day}`;
+}
+
+function getLocalTimestamp(date = new Date()): string {
+  const year = date.getFullYear();
+  const month = pad2(date.getMonth() + 1);
+  const day = pad2(date.getDate());
+  const hours = pad2(date.getHours());
+  const minutes = pad2(date.getMinutes());
+  const seconds = pad2(date.getSeconds());
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+function getLocalFilenameTimestamp(date = new Date()): string {
+  const year = date.getFullYear();
+  const month = pad2(date.getMonth() + 1);
+  const day = pad2(date.getDate());
+  const hours = pad2(date.getHours());
+  const minutes = pad2(date.getMinutes());
+  const seconds = pad2(date.getSeconds());
+  const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
+  return `${year}-${month}-${day}T${hours}_${minutes}_${seconds}.${milliseconds}`;
+}
+
 
 async function processWebhook(content: any, res: any, req?: any) {
-  const date = `${colors.cyan}${new Date().toISOString()}${colors.reset}`;
+  const date = `${colors.cyan}${getLocalTimestamp()}${colors.reset}`;
   const contextValue = req?.headers?.['x-context'] || content?.type;
   const context = contextValue ? ` - ${colors.orange}${contextValue}${colors.reset}` : '';
   console.debug(`${date}${context}`);
@@ -63,7 +95,7 @@ async function processWebhook(content: any, res: any, req?: any) {
 
   /* Save payload to file */
   try {
-    saveToFile(content, `${new Date().toISOString()}.json`, contextValue, { filterLogTypes, ignoreNodeTypes });
+    saveToFile(content, `${getLocalFilenameTimestamp()}.json`, contextValue, { filterLogTypes, ignoreNodeTypes });
   } catch (error) {
     console.error(`${colors.red}${error}${colors.reset}`);
   }
@@ -95,7 +127,7 @@ async function processWebhook(content: any, res: any, req?: any) {
 
 function saveToFile(content: any, filename: string, directory?: string, config?: LogConfig) {
   // Use current date for folder structure (format: YYYY-MM-DD)
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateStamp();
   const dateFolder = directory ? today : '';
 
   const dir = path.join(__dirname, '../data', directory ?? '', dateFolder);
